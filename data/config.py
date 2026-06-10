@@ -2,17 +2,20 @@
 
 cfg_BV4 = {
     'name': 'BBLiteV4',
-    'condition_we':[1,1.4,1.9]
+    'condition_we':[1,1.4,1.9],
+    'return_layers': {'stage1': 1, 'stage2': 2, 'stage3': 3}
 }
 
 cfg_MV1 = {
     'name': 'mobilenet0.25',
-    'condition_we':[1,1.5,2.1]
+    'condition_we':[1,1.5,2.1],
+    'return_layers': {'stage1': 1, 'stage2': 2, 'stage3': 3}
 }
 
 cfg_SV2 = {
     'name': 'shufflenet_v2_x0_5',
-    'condition_we':[1,1.4,1.9]
+    'condition_we':[1,1.4,1.9],
+    'return_layers': {'stage2': 1, 'stage3': 2, 'conv5': 3},
 }
 
 cfg_CAFACLite = {
@@ -27,9 +30,9 @@ cfg_CAFACLite = {
     'epoch': 140,
     'decay1': 100,
     'decay2': 120,
+    'condition_we_apply': True,
     'image_size': 1024,
     'pretrain': True,
-    'return_layers': {'stage1': 1, 'stage2': 2, 'stage3': 3},
     'in_channel': 256,
     'out_channel': 32
 }
