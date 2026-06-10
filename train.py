@@ -16,8 +16,8 @@ from ptflops import get_model_complexity_info as cp
 torch.cuda.set_device(1)
 
 parser = argparse.ArgumentParser(description='LWFD Training')
-parser.add_argument('--training_dataset', default='/home/pguha/Face_work/widerface/train/new_label.txt', help='Training dataset directory')
-parser.add_argument('--network', default='BBLiteV4', help='Backbone network BBLiteV4, mobilenet0.25 or shufflenet_v2_x0_5')
+parser.add_argument('--training_dataset', default='./widerface/train/new_label.txt', help='Training dataset directory')
+parser.add_argument('--network', default='mobilenet0.25', help='Backbone network BBLiteV4, mobilenet0.25 or shufflenet_v2_x0_5')
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
 parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
@@ -25,7 +25,7 @@ parser.add_argument('--resume_net', default=None, help='resume net for retrainin
 parser.add_argument('--resume_epoch', default=0, type=int, help='resume iter for retraining')
 parser.add_argument('--weight_decay', default=5e-4, type=float, help='Weight decay for SGD')
 parser.add_argument('--gamma', default=0.1, type=float, help='Gamma update for SGD')
-parser.add_argument('--save_folder', default='/home/pguha/Face_work/Codes_of_Papers_Gitghub/ICPR2026/weights/', help='Location to save checkpoint models')
+parser.add_argument('--save_folder', default='./weights/', help='Location to save checkpoint models')
 
 args = parser.parse_args()
 
@@ -47,7 +47,10 @@ num_gpu = cfg['ngpu']
 batch_size = cfg['batch_size']
 max_epoch = cfg['epoch']
 gpu_train = cfg['gpu_train']
-condition_weight = cfg_net['condition_we']
+condition_weight_apply = cfg['condition_we_apply']
+if condition_weight_apply == True:
+    condition_weight = cfg_net['condition_we']
+
 
 num_workers = args.num_workers
 momentum = args.momentum
@@ -85,7 +88,10 @@ cudnn.benchmark = True
 
 
 optimizer = optim.SGD(net.parameters(), lr=initial_lr, momentum=momentum, weight_decay=weight_decay)
-criterion = MultiBoxLoss(num_classes, 0.35, True, 0, True, 7, 0.35, False, condition_weight)
+if condition_weight_apply == True:
+    criterion = MultiBoxLoss(num_classes, 0.35, True, 0, True, 7, 0.35, False, condition_weight, condition_weight_apply)
+else:
+    criterion = MultiBoxLoss(num_classes, 0.35, True, 0, True, 7, 0.35, False, [1,1,1], condition_weight_apply)
 
 priorbox = PriorBox(cfg, image_size=(img_dim, img_dim))
 with torch.no_grad():
@@ -133,18 +139,26 @@ def train():
 
         # backprop
         optimizer.zero_grad()
-        loss_l, loss_c, loss_c_we, loss_c_blur, loss_c_occ, loss_landm = criterion(out, priors, targets)
-        loss = cfg['loc_weight'] * loss_l + loss_c + loss_c_we + loss_c_blur + loss_c_occ + loss_landm
+        if condition_weight_apply == True:
+            loss_l, loss_c, loss_c_we, loss_c_blur, loss_c_occ, loss_landm = criterion(out, priors, targets)
+            loss = cfg['loc_weight'] * loss_l + loss_c + loss_c_we + loss_c_blur + loss_c_occ + loss_landm
+        else:
+            loss_l, loss_c, loss_landm = criterion(out, priors, targets)
+            loss = cfg['loc_weight'] * loss_l + loss_c + loss_landm
         loss.backward()
         optimizer.step()
         load_t1 = time.time()
         batch_time = load_t1 - load_t0
         eta = int(batch_time * (max_iter - iteration))
         if iteration%1 == 0:
-            print('Epoch:{}/{} || Epochiter: {}/{} || Iter: {}/{} || Loc: {:.4f} Cla: {:.4f} Cla_We: {:.4f} Cla_Blur: {:.4f} Cla_Occ: {:.4f} Landm: {:.4f} || LR: {:.8f} || Batchtime: {:.4f} s || ETA: {}'
-              .format(epoch, max_epoch, (iteration % epoch_size) + 1,
-              epoch_size, iteration + 1, max_iter, loss_l.item(), loss_c.item(), loss_c_we.item(), loss_c_blur.item(), loss_c_occ.item(), loss_landm.item(), lr, batch_time, str(datetime.timedelta(seconds=eta))))
-
+            if condition_weight_apply == True:
+                print('Epoch:{}/{} || Epochiter: {}/{} || Iter: {}/{} || Loc: {:.4f} Cla: {:.4f} Cla_We: {:.4f} Cla_Blur: {:.4f} Cla_Occ: {:.4f} Landm: {:.4f} || LR: {:.8f} || Batchtime: {:.4f} s || ETA: {}'
+                  .format(epoch, max_epoch, (iteration % epoch_size) + 1,
+                  epoch_size, iteration + 1, max_iter, loss_l.item(), loss_c.item(), loss_c_we.item(), loss_c_blur.item(), loss_c_occ.item(), loss_landm.item(), lr, batch_time, str(datetime.timedelta(seconds=eta))))
+            else:
+                print('Epoch:{}/{} || Epochiter: {}/{} || Iter: {}/{} || Loc: {:.4f} Cla: {:.4f} Landm: {:.4f} || LR: {:.8f} || Batchtime: {:.4f} s || ETA: {}'
+                  .format(epoch, max_epoch, (iteration % epoch_size) + 1,
+                  epoch_size, iteration + 1, max_iter, loss_l.item(), loss_c.item(), loss_landm.item(), lr, batch_time, str(datetime.timedelta(seconds=eta))))
     torch.save(net.state_dict(), save_folder + cfg['name'] + '_CAFACLite' + '_Final.pth')
     # torch.save(net.state_dict(), save_folder + 'Final_Retinaface.pth')
 
