@@ -15,13 +15,13 @@ from ptflops import get_model_complexity_info as cp
 
 
 parser = argparse.ArgumentParser(description='LWFD')
-parser.add_argument('-m', '--trained_model', default='/home/pguha/Face_work/Codes_of_Papers_Gitghub/ICPR2026/weights/CAFACLite_SV2.pth',
+parser.add_argument('-m', '--trained_model', default='./ICPR2026/weights/CAFACLite_SV2.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--network', default='shufflenet_v2_x0_5', help='Backbone network BBLiteV4, mobilenet0.25 or shufflenet_v2_x0_5')
 parser.add_argument('--origin_size', default=False, type=str, help='Whether use origin image size to evaluate')
-parser.add_argument('--save_folder', default='/home/pguha/Face_work/Codes_of_Papers_Gitghub/ICPR2026/widerface_evaluate/widerface_txt/', type=str, help='Dir to save txt results')
+parser.add_argument('--save_folder', default='./widerface_evaluate/widerface_txt/', type=str, help='Dir to save txt results')
 parser.add_argument('--cpu', action="store_true", default=True, help='Use cpu inference')
-parser.add_argument('--dataset_folder', default='/home/pguha/Face_work/widerface/val/images/', type=str, help='dataset path')
+parser.add_argument('--dataset_folder', default='./widerface/val/images/', type=str, help='dataset path')
 parser.add_argument('--confidence_threshold', default=0.02, type=float, help='confidence_threshold')
 parser.add_argument('--confidence_threshold_weight', default=0.05, type=float, help='confidence_threshold_weight')
 parser.add_argument('--confidence_threshold_blur', default=0.05, type=float, help='confidence_threshold_blur')
