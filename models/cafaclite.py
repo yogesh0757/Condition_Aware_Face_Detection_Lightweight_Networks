@@ -90,6 +90,7 @@ class CAFACLite(nn.Module):
         """
         super(CAFACLite,self).__init__()
         self.phase = phase
+        self.condition = cfg['condition_we_apply']
         backbone = None
         if cfg_net['name'] == 'BBLiteV4':
             LiteNetwork = BBLiteV4()
@@ -100,10 +101,11 @@ class CAFACLite(nn.Module):
                 128,
                 256,
             ]
-        elif cfg['name'] == 'mobilenet0.25':
+            self.body = _utils.IntermediateLayerGetter(LiteNetwork, cfg_net['return_layers'])
+        elif cfg_net['name'] == 'mobilenet0.25':
             backbone = MobileNetV1()
             if cfg['pretrain']:
-                checkpoint = torch.load("/home/pguha/Face_work/IEEE_TShort_condition/TPAMI_SHORT/Condition_1_4_1_9/MobileNetV1x0_25_condition_All_Head/weights/mobilenetV1X0.25_pretrain.tar", map_location=torch.device('cpu'))
+                checkpoint = torch.load("/home/pguha/Face_work/Codes_of_Papers_Gitghub/ICPR2026/weights/mobilenetV1X0.25_pretrain.tar", map_location=torch.device('cpu'))
                 from collections import OrderedDict
                 new_state_dict = OrderedDict()
                 for k, v in checkpoint['state_dict'].items():
@@ -116,6 +118,7 @@ class CAFACLite(nn.Module):
                 128,
                 256,
             ]
+            self.body = _utils.IntermediateLayerGetter(backbone, cfg_net['return_layers'])
         elif cfg_net['name'] == 'shufflenet_v2_x0_5':
             import torchvision.models as models
             backbone = models.shufflenet_v2_x0_5(pretrained=cfg['pretrain'])
@@ -124,8 +127,8 @@ class CAFACLite(nn.Module):
                 96,
                 1024,
             ]
+            self.body = _utils.IntermediateLayerGetter(backbone, cfg_net['return_layers'])
 
-        self.body = _utils.IntermediateLayerGetter(LiteNetwork, cfg['return_layers'])
         out_channels = cfg['out_channel']
         self.fpn = FPN(in_channels_list,out_channels)
         self.ssh1 = SSH(out_channels, out_channels)
@@ -133,9 +136,10 @@ class CAFACLite(nn.Module):
         self.ssh3 = SSH(out_channels, out_channels)
 
         self.ClassHead = self._make_class_head(fpn_num=3, inchannels=cfg['out_channel'])
-        self.ClassHead_WE = self._make_class_head_we(fpn_num=3, inchannels=cfg['out_channel'])
-        self.ClassHead_BLUR = self._make_blur_head(fpn_num=3, inchannels=cfg['out_channel'])
-        self.ClassHead_OCC = self._make_occlusion_head(fpn_num=3, inchannels=cfg['out_channel'])
+        if cfg['condition_we_apply'] == True:
+            self.ClassHead_WE = self._make_class_head_we(fpn_num=3, inchannels=cfg['out_channel'])
+            self.ClassHead_BLUR = self._make_blur_head(fpn_num=3, inchannels=cfg['out_channel'])
+            self.ClassHead_OCC = self._make_occlusion_head(fpn_num=3, inchannels=cfg['out_channel'])
         self.BboxHead = self._make_bbox_head(fpn_num=3, inchannels=cfg['out_channel'])
         self.LandmarkHead = self._make_landmark_head(fpn_num=3, inchannels=cfg['out_channel'])
 
@@ -191,12 +195,21 @@ class CAFACLite(nn.Module):
         classifications = torch.cat([self.ClassHead[i](feature) for i, feature in enumerate(features)],dim=1)
         ldm_regressions = torch.cat([self.LandmarkHead[i](feature) for i, feature in enumerate(features)], dim=1)
         
-        classifications_we = torch.cat([self.ClassHead_WE[i](feature) for i, feature in enumerate(features)],dim=1)
-        classifications_blur = torch.cat([self.ClassHead_BLUR[i](feature) for i, feature in enumerate(features)],dim=1)
-        classifications_occ = torch.cat([self.ClassHead_OCC[i](feature) for i, feature in enumerate(features)],dim=1)
 
         if self.phase == 'train':
-            output = (bbox_regressions, classifications, classifications_we, classifications_blur, classifications_occ, ldm_regressions)
+            if self.condition == True:
+                classifications_we = torch.cat([self.ClassHead_WE[i](feature) for i, feature in enumerate(features)],dim=1)
+                classifications_blur = torch.cat([self.ClassHead_BLUR[i](feature) for i, feature in enumerate(features)],dim=1)
+                classifications_occ = torch.cat([self.ClassHead_OCC[i](feature) for i, feature in enumerate(features)],dim=1)
+                output = (bbox_regressions, classifications, classifications_we, classifications_blur, classifications_occ, ldm_regressions)
+            else:
+                output = (bbox_regressions, classifications, ldm_regressions)
         else:
-            output = (bbox_regressions, F.softmax(classifications, dim=-1), F.softmax(classifications_we, dim=-1), F.softmax(classifications_blur, dim=-1), F.softmax(classifications_occ, dim=-1), ldm_regressions)
+            if self.condition == True:
+                classifications_we = torch.cat([self.ClassHead_WE[i](feature) for i, feature in enumerate(features)],dim=1)
+                classifications_blur = torch.cat([self.ClassHead_BLUR[i](feature) for i, feature in enumerate(features)],dim=1)
+                classifications_occ = torch.cat([self.ClassHead_OCC[i](feature) for i, feature in enumerate(features)],dim=1)
+                output = (bbox_regressions, F.softmax(classifications, dim=-1), F.softmax(classifications_we, dim=-1), F.softmax(classifications_blur, dim=-1), F.softmax(classifications_occ, dim=-1), ldm_regressions)
+            else:
+                output = (bbox_regressions, F.softmax(classifications, dim=-1), ldm_regressions)
         return output
