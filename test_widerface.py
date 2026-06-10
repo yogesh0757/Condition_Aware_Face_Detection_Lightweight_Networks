@@ -4,25 +4,28 @@ import argparse
 import torch
 import torch.backends.cudnn as cudnn
 import numpy as np
-from data import cfg_LWFD, cfg_BV1, cfg_BV2, cfg_BV3, cfg_BV4, cfg_BV4x2, cfg_BV4x4
+from data import cfg_CAFACLite, cfg_BV4, cfg_MV1, cfg_SV2
 from layers.functions.prior_box import PriorBox
 from utils.nms.py_cpu_nms import py_cpu_nms
 import cv2
-from models.lwfd import LWFD
+from models.cafaclite import CAFACLite
 from utils.box_utils import decode, decode_landm
 from utils.timer import Timer
 from ptflops import get_model_complexity_info as cp
 
 
 parser = argparse.ArgumentParser(description='LWFD')
-parser.add_argument('-m', '--trained_model', default='/home/pguha/Face_work/Codes_of_Papers_Gitghub/IJCNN/weights/CAFACLite_BV4.pth',
+parser.add_argument('-m', '--trained_model', default='/home/pguha/Face_work/Codes_of_Papers_Gitghub/ICPR2026/weights/CAFACLite_SV2.pth',
                     type=str, help='Trained state_dict file path to open')
-parser.add_argument('--network', default='BBLiteV4x2', help='Backbone network BBLiteV4, mobilenet0.25 or shufflenet_v2_x0_5')
+parser.add_argument('--network', default='shufflenet_v2_x0_5', help='Backbone network BBLiteV4, mobilenet0.25 or shufflenet_v2_x0_5')
 parser.add_argument('--origin_size', default=False, type=str, help='Whether use origin image size to evaluate')
-parser.add_argument('--save_folder', default='/home/pguha/Face_work/Codes_of_Papers_Gitghub/IJCNN/widerface_evaluate/widerface_txt/', type=str, help='Dir to save txt results')
+parser.add_argument('--save_folder', default='/home/pguha/Face_work/Codes_of_Papers_Gitghub/ICPR2026/widerface_evaluate/widerface_txt/', type=str, help='Dir to save txt results')
 parser.add_argument('--cpu', action="store_true", default=True, help='Use cpu inference')
 parser.add_argument('--dataset_folder', default='/home/pguha/Face_work/widerface/val/images/', type=str, help='dataset path')
 parser.add_argument('--confidence_threshold', default=0.02, type=float, help='confidence_threshold')
+parser.add_argument('--confidence_threshold_weight', default=0.05, type=float, help='confidence_threshold_weight')
+parser.add_argument('--confidence_threshold_blur', default=0.05, type=float, help='confidence_threshold_blur')
+parser.add_argument('--confidence_threshold_occlusion', default=0.09, type=float, help='confidence_threshold_occlusion')
 parser.add_argument('--top_k', default=5000, type=int, help='top_k')
 parser.add_argument('--nms_threshold', default=0.4, type=float, help='nms_threshold')
 parser.add_argument('--keep_top_k', default=750, type=int, help='keep_top_k')
@@ -72,19 +75,20 @@ if __name__ == '__main__':
 
     cfg_net = None
     cfg = cfg_CAFACLite
-    if args.network == "BBLiteV4":
+    if args.network == 'BBLiteV4':
         cfg_net = cfg_BV4
-    elif args.network == "mobilenet0.25":
+    elif args.network == 'mobilenet0.25':
         cfg_net = cfg_MV1
     elif args.network == "shufflenet_v2_x0_5":
         cfg_net = cfg_SV2
     # net and model
-    net = LWFD(cfg_net=cfg_net, cfg=cfg, phase = 'test')
+    net = CAFACLite(cfg_net=cfg_net, cfg=cfg, phase = 'test')
     net = load_model(net, args.trained_model, args.cpu)
     net.eval()
     print('Finished loading model!')
     print(net)
     cudnn.benchmark = True
+    condition_weight_apply = cfg['condition_we_apply']
     device = torch.device("cpu" if args.cpu else "cuda")
     net = net.to(device)
 
@@ -134,7 +138,10 @@ if __name__ == '__main__':
             scale = scale.to(device)
 
             #_t['forward_pass'].tic()
-            loc, conf, blur, occlusion, landms = net(img)  # forward pass
+            if condition_weight_apply == True:
+                loc, conf, conf_we, conf_blur, conf_occ, landms = net(img)  # forward pass
+            else:
+                loc, conf, landms = net(img)  # forward pass
             #_t['forward_pass'].toc()
             #_t['misc'].tic()
             priorbox = PriorBox(cfg, image_size=(im_height, im_width))
@@ -144,7 +151,11 @@ if __name__ == '__main__':
             boxes = decode(loc.data.squeeze(0), prior_data, cfg['variance'])
             boxes = boxes * scale / resize
             boxes = boxes.cpu().numpy()
-            scores = conf.squeeze(0).data.cpu().numpy()[:, 1]
+            scores1 = conf.squeeze(0).data.cpu().numpy()[:, 1]
+            if condition_weight_apply == True:
+                scores2 = conf_we.squeeze(0).data.cpu().numpy()[:, 1]
+                scores3 = conf_blur.squeeze(0).data.cpu().numpy()[:, 1]
+                scores4 = conf_occ.squeeze(0).data.cpu().numpy()[:, 1]
             landms = decode_landm(landms.data.squeeze(0), prior_data, cfg['variance'])
             scale1 = torch.Tensor([img.shape[3], img.shape[2], img.shape[3], img.shape[2],
                                    img.shape[3], img.shape[2], img.shape[3], img.shape[2],
@@ -153,11 +164,39 @@ if __name__ == '__main__':
             landms = landms * scale1 / resize
             landms = landms.cpu().numpy()
             
-            inds = np.where(scores > args.confidence_threshold)[0]
-            print(inds.shape)
-            boxes = boxes[inds]
-            landms = landms[inds]
-            scores = scores[inds]
+            
+
+            if condition_weight_apply == True:
+                inds1 = np.where(scores1 > args.confidence_threshold)[0]
+                boxes1 = boxes[inds1]
+                landms1 = landms[inds1]
+                scores1 = scores1[inds1]
+
+                inds2 = np.where(scores2 > args.confidence_threshold_weight)[0]
+                boxes2 = boxes[inds2]
+                landms2 = landms[inds2]
+                scores2 = scores2[inds2]
+
+                inds3 = np.where(scores3 > args.confidence_threshold_blur)[0]
+                boxes3 = boxes[inds3]
+                landms3 = landms[inds3]
+                scores3 = scores3[inds3]
+
+                inds4 = np.where(scores4 > args.confidence_threshold_occlusion)[0]
+                boxes4 = boxes[inds4]
+                landms4 = landms[inds4]
+                scores4 = scores4[inds4]
+
+                scores =  np.concatenate((scores1, scores2, scores3, scores4), axis=0)
+                boxes =  np.concatenate((boxes1, boxes2, boxes3, boxes4), axis=0)
+                landms =  np.concatenate((landms1, landms2, landms3, landms4), axis=0)
+
+            else:
+                inds = np.where(scores1 > args.confidence_threshold)[0]
+                boxes = boxes[inds1]
+                landms = landms[inds1]
+                scores = scores1[inds1]
+
 
             # keep top-K before NMS
             order = scores.argsort()[::-1]
@@ -174,8 +213,8 @@ if __name__ == '__main__':
             landms = landms[keep]
 
             # keep top-K faster NMS
-            # dets = dets[:args.keep_top_k, :]
-            # landms = landms[:args.keep_top_k, :]
+            dets = dets[:args.keep_top_k, :]
+            landms = landms[:args.keep_top_k, :]
 
             dets = np.concatenate((dets, landms), axis=1)
             #_t['misc'].toc()
