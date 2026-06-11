@@ -10,7 +10,7 @@ A PyTorch implementation of **CAFACLite** — a Condition-Aware Face Anchor Clas
 
 ---
 
-## Overview
+## Overviewhttps://drive.google.com/drive/folders/1lLnARLxMGWYzoQJQVo8-gnp2tCnsZT01?usp=drive_link
 
 Standard lightweight face detectors treat all face anchors uniformly during training, regardless of visual quality. Faces degraded by **blur** or **occlusion** receive the same gradient contribution as clear, well-lit faces, leading to systematic underperformance under these conditions.
 
@@ -92,7 +92,7 @@ Input Image (W × H × 3)
   │  ├──────────────┤  ├───────────────────────┤   │
   │  │  ClassHead   │  │  ClassHead_Occ        │   │
   │  │  _Blur       │  │  (occlusion-specific) │   │
-  │  └──────────────┘  └───────────────────────┘   │
+  │  └──────────────┘  └───────────────────────┘   │https://drive.google.com/drive/folders/1lLnARLxMGWYzoQJQVo8-gnp2tCnsZT01?usp=drive_link
   │  ┌──────────────┐  ┌───────────────────────┐   │
   │  │  BboxHead    │  │  LandmarkHead         │   │
   │  │  (4 coords)  │  │  (10 coords = 5 pts)  │   │
