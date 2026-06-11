@@ -10,7 +10,7 @@ A PyTorch implementation of **CAFACLite** — a Condition-Aware Face Anchor Clas
 
 ---
 
-## Overviewhttps://drive.google.com/drive/folders/1lLnARLxMGWYzoQJQVo8-gnp2tCnsZT01?usp=drive_link
+## Overview
 
 Standard lightweight face detectors treat all face anchors uniformly during training, regardless of visual quality. Faces degraded by **blur** or **occlusion** receive the same gradient contribution as clear, well-lit faces, leading to systematic underperformance under these conditions.
 
@@ -92,7 +92,7 @@ Input Image (W × H × 3)
   │  ├──────────────┤  ├───────────────────────┤   │
   │  │  ClassHead   │  │  ClassHead_Occ        │   │
   │  │  _Blur       │  │  (occlusion-specific) │   │
-  │  └──────────────┘  └───────────────────────┘   │https://drive.google.com/drive/folders/1lLnARLxMGWYzoQJQVo8-gnp2tCnsZT01?usp=drive_link
+  │  └──────────────┘  └───────────────────────┘   │
   │  ┌──────────────┐  ┌───────────────────────┐   │
   │  │  BboxHead    │  │  LandmarkHead         │   │
   │  │  (4 coords)  │  │  (10 coords = 5 pts)  │   │
@@ -161,8 +161,8 @@ light_weight_face_detector_lwfd/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yogesh0757/Condition_Aware_Face_Detection_Lightweight_Networks.git
-cd Condition_Aware_Face_Detection_Lightweight_Networks
+git clone https://github.com/yogesh0757/light_weight_face_detector_lwfd.git
+cd light_weight_face_detector_lwfd
 ```
 
 ### 2. Install dependencies
@@ -176,7 +176,7 @@ pip install opencv-python numpy scipy tqdm ptflops
 
 ### 3. Download pretrained weights
 
-Download pretrained backbone and detector weights from [Google Drive](https://drive.google.com/drive/folders/1lLnARLxMGWYzoQJQVo8-gnp2tCnsZT01?usp=drive_link) and place them in the `weights/` directory:
+Download pretrained backbone and detector weights from [Google Drive](https://drive.google.com/drive/folders/1rIEazwm9POodSXE5Sw9H_SDCW4ug71eM?usp=sharing) and place them in the `weights/` directory:
 
 ```
 weights/
