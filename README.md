@@ -6,7 +6,7 @@
 [![Python 3.6+](https://img.shields.io/badge/Python-3.6%2B-blue)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-1.1%2B-orange)](https://pytorch.org/)
 
-A PyTorch implementation of **CAFACLite** — a Condition-Aware Face Anchor Classification framework for lightweight face detection under challenging conditions including blur, occlusion, and masked faces. This repository also contains the complete **BBLite / LWFD backbone series** from our IJCNN 2025 paper.
+A PyTorch implementation of **CAFACLite** — a Condition-Aware Face Anchor Classification framework for lightweight face detection under challenging conditions including blur, occlusion, and masked faces.
 
 ---
 
@@ -59,21 +59,6 @@ The framework supports three backbone options:
 | CAFACLite-BB4 | 73.30 | 76.94 | 77.82 |
 | CAFACLite-MV1 | **73.50** | **77.57** | 78.07 |
 | CAFACLite-SV2 | 72.57 | 75.82 | 77.01 |
-
----
-
-### BBLite / LWFD Backbone Series — WIDER FACE Validation (Float32)
-
-*(From the IJCNN 2025 paper)*
-
-| Backbone-LWFD | Easy (%) | Medium (%) | Hard (%) | mAP (%) | Params (M) | GFLOPs |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| BBLiteV1-LWFD | 91.37 | 88.45 | 79.52 | 86.45 | 0.172 | 0.369 |
-| BBLiteV2-LWFD | 91.55 | 88.49 | 79.29 | 86.44 | 0.177 | 0.382 |
-| BBLiteV3-LWFD | 92.44 | 89.42 | 80.77 | 87.54 | 0.192 | 0.421 |
-| BBLiteV4-LWFD | 92.94 | 89.94 | 81.10 | 87.99 | 0.200 | 0.456 |
-| BBLiteV4×2-LWFD | 94.10 | 91.71 | 84.20 | 90.00 | — | — |
-| BBLiteV4×4-LWFD | 95.15 | 93.38 | 87.33 | 91.95 | 2.59 | 4.98 |
 
 ---
 
