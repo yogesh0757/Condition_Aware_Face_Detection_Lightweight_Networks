@@ -161,8 +161,8 @@ light_weight_face_detector_lwfd/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yogesh0757/light_weight_face_detector_lwfd.git
-cd light_weight_face_detector_lwfd
+git clone https://github.com/yogesh0757/Condition_Aware_Face_Detection_Lightweight_Networks.git
+cd Condition_Aware_Face_Detection_Lightweight_Networks
 ```
 
 ### 2. Install dependencies
