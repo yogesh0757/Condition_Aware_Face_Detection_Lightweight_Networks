@@ -140,9 +140,7 @@ if __name__ == '__main__':
             #_t['forward_pass'].tic()
             if condition_weight_apply == True:
                 loc, conf, conf_we, conf_blur, conf_occ, landms = net(img)  # forward pass
-                print("Hell0")
             else:
-                print("Hell2")
                 loc, conf, landms = net(img)  # forward pass
             #_t['forward_pass'].toc()
             #_t['misc'].tic()
