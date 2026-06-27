@@ -15,9 +15,9 @@ from utils.timer import Timer
 
 parser = argparse.ArgumentParser(description='LWFD')
 
-parser.add_argument('-m', '--trained_model', default='./weights/BBLiteV1_LWFD.pth',
+parser.add_argument('-m', '--trained_model', default='./weights/CAFACLite_BV4.pth',
                     type=str, help='Trained state_dict file path to open')
-parser.add_argument('--network', default='BBLiteV1', help='Backbone network BBLiteV1, BBLiteV2, BBLiteV3, BBLiteV4, BBLiteV4x2 or BBLiteV4x4')
+parser.add_argument('--network', default='BBLiteV4', help='Backbone network BBLiteV4, mobilenet0.25 or shufflenet_v2_x0_5')
 parser.add_argument('--save_folder', default='./mafa_evaluate/eval/', type=str, help='Dir to save results')
 parser.add_argument('--cpu', action="store_true", default=True, help='Use cpu inference')
 parser.add_argument('--dataset', default='./MAFA/', type=str, choices=['FDDB'], help='dataset')
@@ -182,9 +182,9 @@ if __name__ == '__main__':
 
         else:
             inds = np.where(scores1 > args.confidence_threshold)[0]
-            boxes = boxes[inds1]
-            landms = landms[inds1]
-            scores = scores1[inds1]
+            boxes = boxes[inds]
+            landms = landms[inds]
+            scores = scores1[inds]
 
         # keep top-K before NMS
         # order = scores.argsort()[::-1][:args.top_k]
