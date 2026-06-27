@@ -94,7 +94,7 @@ class CAFACLite(nn.Module):
         backbone = None
         if cfg_net['name'] == 'BBLiteV4':
             LiteNetwork = BBLiteV4()
-            checkpoint = torch.load('/home/pguha/Face_work/Codes_of_Papers_Gitghub/ICPR2026/weights/BBLiteV4.pth.tar', map_location=torch.device('cpu'))
+            checkpoint = torch.load('./weights/BBLiteV4.pth.tar', map_location=torch.device('cpu'))
             LiteNetwork.load_state_dict(checkpoint['state_dict'])
             in_channels_list = [
                 64,
@@ -105,7 +105,7 @@ class CAFACLite(nn.Module):
         elif cfg_net['name'] == 'mobilenet0.25':
             backbone = MobileNetV1()
             if cfg['pretrain']:
-                checkpoint = torch.load("/home/pguha/Face_work/Codes_of_Papers_Gitghub/ICPR2026/weights/mobilenetV1X0.25_pretrain.tar", map_location=torch.device('cpu'))
+                checkpoint = torch.load("./weights/mobilenetV1X0.25_pretrain.tar", map_location=torch.device('cpu'))
                 from collections import OrderedDict
                 new_state_dict = OrderedDict()
                 for k, v in checkpoint['state_dict'].items():
