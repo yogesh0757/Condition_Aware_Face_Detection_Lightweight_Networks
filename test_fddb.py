@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(description='LWFD')
 
 parser.add_argument('-m', '--trained_model', default='./weights/BBLiteV1_LWFD.pth',
                     type=str, help='Trained state_dict file path to open')
-parser.add_argument('--network', default='BBLiteV1', help='Backbone network BBLiteV1, BBLiteV2, BBLiteV3, BBLiteV4, BBLiteV4x2 or BBLiteV4x4')
+parser.add_argument('--network', default='BBLiteV4', help='Backbone network BBLiteV4, mobilenet0.25 or shufflenet_v2_x0_5')
 parser.add_argument('--save_folder', default='./fddb_evaluate/eval/', type=str, help='Dir to save results')
 parser.add_argument('--cpu', action="store_true", default=True, help='Use cpu inference')
 parser.add_argument('--dataset', default='./FDDB_dataset/', type=str, choices=['FDDB'], help='dataset')
@@ -70,11 +70,12 @@ def load_model(model, pretrained_path, load_to_cpu):
 
 if __name__ == '__main__':
     torch.set_grad_enabled(False)
+
     cfg_net = None
     cfg = cfg_CAFACLite
-    if args.network == "BBLiteV4":
+    if args.network == 'BBLiteV4':
         cfg_net = cfg_BV4
-    elif args.network == "mobilenet0.25":
+    elif args.network == 'mobilenet0.25':
         cfg_net = cfg_MV1
     elif args.network == "shufflenet_v2_x0_5":
         cfg_net = cfg_SV2
@@ -177,9 +178,9 @@ if __name__ == '__main__':
 
         else:
             inds = np.where(scores1 > args.confidence_threshold)[0]
-            boxes = boxes[inds1]
-            landms = landms[inds1]
-            scores = scores1[inds1]
+            boxes = boxes[inds]
+            landms = landms[inds]
+            scores = scores1[inds]
 
         # keep top-K before NMS
         # order = scores.argsort()[::-1][:args.top_k]
