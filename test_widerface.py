@@ -15,12 +15,12 @@ from ptflops import get_model_complexity_info as cp
 
 
 parser = argparse.ArgumentParser(description='LWFD')
-parser.add_argument('-m', '--trained_model', default='./ICPR2026/weights/CAFACLite_SV2.pth',
+parser.add_argument('-m', '--trained_model', default='./weights/WO_CAFACLite_SV2.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--network', default='shufflenet_v2_x0_5', help='Backbone network BBLiteV4, mobilenet0.25 or shufflenet_v2_x0_5')
 parser.add_argument('--origin_size', default=False, type=str, help='Whether use origin image size to evaluate')
 parser.add_argument('--save_folder', default='./widerface_evaluate/widerface_txt/', type=str, help='Dir to save txt results')
-parser.add_argument('--cpu', action="store_true", default=True, help='Use cpu inference')
+parser.add_argument('--cpu', action="store_true", default=False, help='Use cpu inference')
 parser.add_argument('--dataset_folder', default='./widerface/val/images/', type=str, help='dataset path')
 parser.add_argument('--confidence_threshold', default=0.02, type=float, help='confidence_threshold')
 parser.add_argument('--confidence_threshold_weight', default=0.05, type=float, help='confidence_threshold_weight')
@@ -140,7 +140,9 @@ if __name__ == '__main__':
             #_t['forward_pass'].tic()
             if condition_weight_apply == True:
                 loc, conf, conf_we, conf_blur, conf_occ, landms = net(img)  # forward pass
+                print("Hell0")
             else:
+                print("Hell2")
                 loc, conf, landms = net(img)  # forward pass
             #_t['forward_pass'].toc()
             #_t['misc'].tic()
@@ -193,9 +195,9 @@ if __name__ == '__main__':
 
             else:
                 inds = np.where(scores1 > args.confidence_threshold)[0]
-                boxes = boxes[inds1]
-                landms = landms[inds1]
-                scores = scores1[inds1]
+                boxes = boxes[inds]
+                landms = landms[inds]
+                scores = scores1[inds]
 
 
             # keep top-K before NMS
