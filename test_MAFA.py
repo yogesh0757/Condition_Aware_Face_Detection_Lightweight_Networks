@@ -4,14 +4,14 @@ import argparse
 import torch
 import torch.backends.cudnn as cudnn
 import numpy as np
-from scipy.io import loadmat
 from data import cfg_CAFACLite, cfg_BV4, cfg_MV1, cfg_SV2
 from layers.functions.prior_box import PriorBox
 from utils.nms.py_cpu_nms import py_cpu_nms
 import cv2
-from models.lwfd import LWFD
+from models.cafaclite import CAFACLite
 from utils.box_utils import decode, decode_landm
 from utils.timer import Timer
+from ptflops import get_model_complexity_info as cp
 
 parser = argparse.ArgumentParser(description='LWFD')
 
