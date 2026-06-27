@@ -11,16 +11,17 @@ import cv2
 from models.cafaclite import CAFACLite
 from utils.box_utils import decode, decode_landm
 from utils.timer import Timer
+from scipy.io import loadmat
 from ptflops import get_model_complexity_info as cp
 
 parser = argparse.ArgumentParser(description='LWFD')
 
-parser.add_argument('-m', '--trained_model', default='./weights/CAFACLite_BV4.pth',
+parser.add_argument('-m', '--trained_model', default='/home/pguha/Face_work/Condition_Aware_Face_Detection_Lightweight_Networks-main/weights/CAFACLite_BV4.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--network', default='BBLiteV4', help='Backbone network BBLiteV4, mobilenet0.25 or shufflenet_v2_x0_5')
-parser.add_argument('--save_folder', default='./mafa_evaluate/eval/', type=str, help='Dir to save results')
+parser.add_argument('--save_folder', default='/home/pguha/Face_work/Condition_Aware_Face_Detection_Lightweight_Networks-main/mafa_evaluate/eval/', type=str, help='Dir to save results')
 parser.add_argument('--cpu', action="store_true", default=True, help='Use cpu inference')
-parser.add_argument('--dataset', default='./MAFA/', type=str, choices=['FDDB'], help='dataset')
+parser.add_argument('--dataset', default='/home/pguha/Face_work/MAFA/', type=str, choices=['FDDB'], help='dataset')
 parser.add_argument('--confidence_threshold', default=0.02, type=float, help='confidence_threshold')
 parser.add_argument('--confidence_threshold_weight', default=0.05, type=float, help='confidence_threshold_weight')
 parser.add_argument('--confidence_threshold_blur', default=0.05, type=float, help='confidence_threshold_blur')
@@ -130,7 +131,7 @@ if __name__ == '__main__':
 
         _t['forward_pass'].tic()
         if condition_weight_apply == True:
-            loc, conf, conf_we, blur, occlusion, landms = net(img)  # forward pass
+            loc, conf, conf_we, conf_blur, conf_occ, landms = net(img)  # forward pass
         else:
             loc, conf, landms = net(img)  # forward pass
         _t['forward_pass'].toc()
