@@ -14,7 +14,7 @@ from utils.timer import Timer
 
 parser = argparse.ArgumentParser(description='LWFD')
 
-parser.add_argument('-m', '--trained_model', default='./weights/BBLiteV1_LWFD.pth',
+parser.add_argument('-m', '--trained_model', default='./weights/CAFACLite_BV4.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--network', default='BBLiteV4', help='Backbone network BBLiteV4, mobilenet0.25 or shufflenet_v2_x0_5')
 parser.add_argument('--save_folder', default='./fddb_evaluate/eval/', type=str, help='Dir to save results')
